@@ -1,24 +1,13 @@
-```tsx
 "use client";
 
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-if (!supabaseUrl) {
-  throw new Error("NEXT_PUBLIC_SUPABASE_URL não está configurada.");
-}
-
-if (!supabaseKey) {
-  throw new Error(
-    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY não está configurada."
-  );
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+);
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,7 +24,7 @@ export default function LoginPage() {
     setError("");
     setSuccess("");
 
-    if (!email.trim() || !password) {
+    if (!email || !password) {
       setError("Digite seu e-mail e sua senha.");
       return;
     }
@@ -44,7 +33,7 @@ export default function LoginPage() {
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email,
         password,
       });
 
@@ -61,12 +50,11 @@ export default function LoginPage() {
     } catch (err: unknown) {
       console.error("Erro no login:", err);
 
-      const message =
+      setError(
         err instanceof Error
           ? err.message
-          : "E-mail ou senha incorretos.";
-
-      setError(message);
+          : "E-mail ou senha incorretos."
+      );
     } finally {
       setLoading(false);
     }
@@ -76,13 +64,8 @@ export default function LoginPage() {
     setError("");
     setSuccess("");
 
-    if (!email.trim()) {
-      setError("Digite seu e-mail.");
-      return;
-    }
-
-    if (!password) {
-      setError("Digite sua senha.");
+    if (!email || !password) {
+      setError("Digite seu e-mail e sua senha.");
       return;
     }
 
@@ -95,7 +78,7 @@ export default function LoginPage() {
 
     try {
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
+        email,
         password,
       });
 
@@ -120,12 +103,11 @@ export default function LoginPage() {
     } catch (err: unknown) {
       console.error("Erro no cadastro:", err);
 
-      const message =
+      setError(
         err instanceof Error
           ? err.message
-          : "Não foi possível criar a conta.";
-
-      setError(message);
+          : "Não foi possível criar a conta."
+      );
     } finally {
       setLoading(false);
     }
@@ -154,7 +136,6 @@ export default function LoginPage() {
           borderRadius: "20px",
           padding: "35px",
           boxSizing: "border-box",
-          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.35)",
         }}
       >
         <div
@@ -163,14 +144,7 @@ export default function LoginPage() {
             marginBottom: "30px",
           }}
         >
-          <div
-            style={{
-              fontSize: "50px",
-              marginBottom: "10px",
-            }}
-          >
-            ✂️
-          </div>
+          <div style={{ fontSize: "50px" }}>✂️</div>
 
           <h1
             style={{
@@ -181,12 +155,7 @@ export default function LoginPage() {
             AutoClipper AI
           </h1>
 
-          <p
-            style={{
-              color: "#a1a1aa",
-              margin: 0,
-            }}
-          >
+          <p style={{ color: "#a1a1aa" }}>
             Entre para criar seus cortes com IA.
           </p>
         </div>
@@ -222,7 +191,6 @@ export default function LoginPage() {
               background: "#09090b",
               color: "white",
               fontSize: "16px",
-              outline: "none",
             }}
           />
 
@@ -256,7 +224,6 @@ export default function LoginPage() {
               background: "#09090b",
               color: "white",
               fontSize: "16px",
-              outline: "none",
             }}
           />
 
@@ -301,15 +268,12 @@ export default function LoginPage() {
 
         {error && (
           <div
-            role="alert"
             style={{
               marginTop: "20px",
               padding: "14px",
               borderRadius: "10px",
               background: "#450a0a",
               color: "#fecaca",
-              lineHeight: "1.5",
-              wordBreak: "break-word",
             }}
           >
             ❌ {error}
@@ -318,14 +282,12 @@ export default function LoginPage() {
 
         {success && (
           <div
-            role="status"
             style={{
               marginTop: "20px",
               padding: "14px",
               borderRadius: "10px",
               background: "#14532d",
               color: "#bbf7d0",
-              lineHeight: "1.5",
             }}
           >
             ✅ {success}
@@ -335,4 +297,3 @@ export default function LoginPage() {
     </main>
   );
 }
-```
