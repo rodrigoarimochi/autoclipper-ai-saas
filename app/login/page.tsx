@@ -13,7 +13,9 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  async function handleLogin() {
+  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
     setError("");
     setSuccess("");
 
@@ -24,31 +26,21 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
 
-      if (error) throw error;
-
-      setSuccess("Login realizado com sucesso!");
-
-      setTimeout(() => {
-        router.push("/");
-        router.refresh();
-      }, 500);
-    } catch (err: unknown) {
-      console.error(err);
-
-      setError(
-        err instanceof Error
-          ? err.message
-          : "E-mail ou senha incorretos."
-      );
-    } finally {
+    if (error) {
+      setError(error.message);
       setLoading(false);
+      return;
     }
+
+    setSuccess("Login realizado com sucesso!");
+
+    router.push("/");
+    router.refresh();
   }
 
   async function handleSignup() {
@@ -72,50 +64,42 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-      });
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+    });
 
-      if (error) throw error;
-
-      if (data.session) {
-        setSuccess("Conta criada com sucesso!");
-
-        setTimeout(() => {
-          router.push("/");
-          router.refresh();
-        }, 500);
-      } else {
-        setSuccess(
-          "Conta criada! Verifique seu e-mail para confirmar."
-        );
-      }
-    } catch (err: unknown) {
-      console.error(err);
-
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Não foi possível criar a conta."
-      );
-    } finally {
+    if (error) {
+      setError(error.message);
       setLoading(false);
+      return;
     }
+
+    if (data.session) {
+      setSuccess("Conta criada com sucesso!");
+      router.push("/");
+      router.refresh();
+      return;
+    }
+
+    setSuccess(
+      "Conta criada! Verifique seu e-mail para confirmar o cadastro."
+    );
+
+    setLoading(false);
   }
 
   return (
     <main
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #09090b, #18181b, #27272a)",
-        color: "#fff",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: "20px",
+        background:
+          "linear-gradient(135deg, #09090b 0%, #18181b 50%, #27272a 100%)",
+        color: "#fff",
         fontFamily: "Arial, sans-serif",
       }}
     >
@@ -128,6 +112,7 @@ export default function LoginPage() {
           borderRadius: "20px",
           padding: "35px",
           boxSizing: "border-box",
+          boxShadow: "0 20px 50px rgba(0,0,0,.35)",
         }}
       >
         <div
@@ -136,7 +121,9 @@ export default function LoginPage() {
             marginBottom: "30px",
           }}
         >
-          <div style={{ fontSize: "50px" }}>✂️</div>
+          <div style={{ fontSize: "50px", marginBottom: "10px" }}>
+            ✂️
+          </div>
 
           <h1
             style={{
@@ -147,91 +134,101 @@ export default function LoginPage() {
             AutoClipper AI
           </h1>
 
-          <p style={{ color: "#a1a1aa" }}>
+          <p
+            style={{
+              color: "#a1a1aa",
+              margin: 0,
+            }}
+          >
             Entre para criar seus cortes com IA.
           </p>
         </div>
 
-        <label
-          htmlFor="email"
-          style={{
-            display: "block",
-            marginBottom: "8px",
-            fontWeight: "bold",
-          }}
-        >
-          E-mail
-        </label>
+        <form onSubmit={handleLogin}>
+          <label
+            htmlFor="email"
+            style={{
+              display: "block",
+              marginBottom: "8px",
+              fontWeight: "bold",
+            }}
+          >
+            E-mail
+          </label>
 
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="seu@email.com"
-          disabled={loading}
-          style={{
-            width: "100%",
-            boxSizing: "border-box",
-            padding: "15px",
-            marginBottom: "20px",
-            borderRadius: "10px",
-            border: "1px solid #52525b",
-            background: "#09090b",
-            color: "#fff",
-            fontSize: "16px",
-          }}
-        />
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="seu@email.com"
+            autoComplete="email"
+            disabled={loading}
+            required
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              padding: "15px",
+              marginBottom: "20px",
+              borderRadius: "10px",
+              border: "1px solid #52525b",
+              background: "#09090b",
+              color: "#fff",
+              fontSize: "16px",
+            }}
+          />
 
-        <label
-          htmlFor="password"
-          style={{
-            display: "block",
-            marginBottom: "8px",
-            fontWeight: "bold",
-          }}
-        >
-          Senha
-        </label>
+          <label
+            htmlFor="password"
+            style={{
+              display: "block",
+              marginBottom: "8px",
+              fontWeight: "bold",
+            }}
+          >
+            Senha
+          </label>
 
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Sua senha"
-          disabled={loading}
-          style={{
-            width: "100%",
-            boxSizing: "border-box",
-            padding: "15px",
-            marginBottom: "20px",
-            borderRadius: "10px",
-            border: "1px solid #52525b",
-            background: "#09090b",
-            color: "#fff",
-            fontSize: "16px",
-          }}
-        />
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Sua senha"
+            autoComplete="current-password"
+            disabled={loading}
+            required
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              padding: "15px",
+              marginBottom: "20px",
+              borderRadius: "10px",
+              border: "1px solid #52525b",
+              background: "#09090b",
+              color: "#fff",
+              fontSize: "16px",
+            }}
+          />
 
-        <button
-          type="button"
-          onClick={handleLogin}
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "16px",
-            border: "none",
-            borderRadius: "10px",
-            background: loading ? "#52525b" : "#f97316",
-            color: "#fff",
-            fontSize: "17px",
-            fontWeight: "bold",
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? "Entrando..." : "Entrar"}
-        </button>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "16px",
+              border: "none",
+              borderRadius: "10px",
+              background: loading ? "#52525b" : "#f97316",
+              color: "#fff",
+              fontSize: "17px",
+              fontWeight: "bold",
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Entrando..." : "Entrar"}
+          </button>
+        </form>
 
         <button
           type="button"
@@ -247,6 +244,7 @@ export default function LoginPage() {
             color: "#fff",
             fontSize: "16px",
             fontWeight: "bold",
+            cursor: loading ? "not-allowed" : "pointer",
           }}
         >
           {loading ? "Aguarde..." : "Criar minha conta"}
@@ -254,12 +252,15 @@ export default function LoginPage() {
 
         {error && (
           <div
+            role="alert"
             style={{
               marginTop: "20px",
               padding: "14px",
               borderRadius: "10px",
               background: "#450a0a",
               color: "#fecaca",
+              lineHeight: "1.5",
+              wordBreak: "break-word",
             }}
           >
             ❌ {error}
@@ -268,12 +269,14 @@ export default function LoginPage() {
 
         {success && (
           <div
+            role="status"
             style={{
               marginTop: "20px",
               padding: "14px",
               borderRadius: "10px",
               background: "#14532d",
               color: "#bbf7d0",
+              lineHeight: "1.5",
             }}
           >
             ✅ {success}
