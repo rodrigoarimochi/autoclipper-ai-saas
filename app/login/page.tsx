@@ -1,13 +1,26 @@
+```tsx
 "use client";
 
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!url) {
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL não configurada.");
+  }
+
+  if (!key) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY não configurada."
+    );
+  }
+
+  return createClient(url, key);
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,7 +37,7 @@ export default function LoginPage() {
     setError("");
     setSuccess("");
 
-    if (!email || !password) {
+    if (!email.trim() || !password) {
       setError("Digite seu e-mail e sua senha.");
       return;
     }
@@ -32,8 +45,10 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const supabase = getSupabase();
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
@@ -64,8 +79,13 @@ export default function LoginPage() {
     setError("");
     setSuccess("");
 
-    if (!email || !password) {
-      setError("Digite seu e-mail e sua senha.");
+    if (!email.trim()) {
+      setError("Digite seu e-mail.");
+      return;
+    }
+
+    if (!password) {
+      setError("Digite sua senha.");
       return;
     }
 
@@ -77,8 +97,10 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const supabase = getSupabase();
+
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
       });
 
@@ -136,6 +158,7 @@ export default function LoginPage() {
           borderRadius: "20px",
           padding: "35px",
           boxSizing: "border-box",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.35)",
         }}
       >
         <div
@@ -144,7 +167,14 @@ export default function LoginPage() {
             marginBottom: "30px",
           }}
         >
-          <div style={{ fontSize: "50px" }}>✂️</div>
+          <div
+            style={{
+              fontSize: "50px",
+              marginBottom: "10px",
+            }}
+          >
+            ✂️
+          </div>
 
           <h1
             style={{
@@ -155,7 +185,12 @@ export default function LoginPage() {
             AutoClipper AI
           </h1>
 
-          <p style={{ color: "#a1a1aa" }}>
+          <p
+            style={{
+              color: "#a1a1aa",
+              margin: 0,
+            }}
+          >
             Entre para criar seus cortes com IA.
           </p>
         </div>
@@ -268,12 +303,15 @@ export default function LoginPage() {
 
         {error && (
           <div
+            role="alert"
             style={{
               marginTop: "20px",
               padding: "14px",
               borderRadius: "10px",
               background: "#450a0a",
               color: "#fecaca",
+              lineHeight: "1.5",
+              wordBreak: "break-word",
             }}
           >
             ❌ {error}
@@ -282,12 +320,14 @@ export default function LoginPage() {
 
         {success && (
           <div
+            role="status"
             style={{
               marginTop: "20px",
               padding: "14px",
               borderRadius: "10px",
               background: "#14532d",
               color: "#bbf7d0",
+              lineHeight: "1.5",
             }}
           >
             ✅ {success}
@@ -297,3 +337,4 @@ export default function LoginPage() {
     </main>
   );
 }
+```
