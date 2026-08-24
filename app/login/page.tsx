@@ -17,8 +17,13 @@ export default function LoginPage() {
     setError("");
     setSuccess("");
 
-    if (!email.trim() || !password) {
-      setError("Digite seu e-mail e sua senha.");
+    if (!email.trim()) {
+      setError("Digite seu e-mail.");
+      return;
+    }
+
+    if (!password) {
+      setError("Digite sua senha.");
       return;
     }
 
@@ -41,13 +46,13 @@ export default function LoginPage() {
         router.refresh();
       }, 500);
     } catch (err: unknown) {
-      console.error(err);
+      console.error("Erro no login:", err);
 
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Não foi possível realizar o login."
-      );
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Não foi possível realizar o login.");
+      }
     } finally {
       setLoading(false);
     }
@@ -97,13 +102,13 @@ export default function LoginPage() {
         );
       }
     } catch (err: unknown) {
-      console.error(err);
+      console.error("Erro no cadastro:", err);
 
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Não foi possível criar a conta."
-      );
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Não foi possível criar a conta.");
+      }
     } finally {
       setLoading(false);
     }
@@ -132,7 +137,7 @@ export default function LoginPage() {
           borderRadius: "20px",
           padding: "35px",
           boxSizing: "border-box",
-          boxShadow: "0 20px 50px rgba(0,0,0,0.35)",
+          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.35)",
         }}
       >
         <div
@@ -141,7 +146,12 @@ export default function LoginPage() {
             marginBottom: "30px",
           }}
         >
-          <div style={{ fontSize: "50px", marginBottom: "10px" }}>
+          <div
+            style={{
+              fontSize: "50px",
+              marginBottom: "10px",
+            }}
+          >
             ✂️
           </div>
 
@@ -244,7 +254,7 @@ export default function LoginPage() {
             cursor: loading ? "not-allowed" : "pointer",
           }}
         >
-          {loading ? "Aguarde..." : "Entrar"}
+          {loading ? "Entrando..." : "Entrar"}
         </button>
 
         <button
@@ -269,6 +279,7 @@ export default function LoginPage() {
 
         {error && (
           <div
+            role="alert"
             style={{
               marginTop: "20px",
               padding: "14px",
@@ -285,6 +296,7 @@ export default function LoginPage() {
 
         {success && (
           <div
+            role="status"
             style={{
               marginTop: "20px",
               padding: "14px",
