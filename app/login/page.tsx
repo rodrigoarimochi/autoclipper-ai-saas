@@ -1,14 +1,15 @@
-```tsx
 "use client";
 
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
+const supabaseUrl = "https://ejljrbxbladcawdgtzox.supabase.co";
+
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,11 +20,17 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     setError("");
     setSuccess("");
+
+    if (!email || !password) {
+      setError("Digite seu e-mail e sua senha.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -43,7 +50,11 @@ export default function LoginPage() {
         router.refresh();
       }, 500);
     } catch (err: any) {
-      setError(err?.message || "E-mail ou senha incorretos.");
+      console.error("Erro no login:", err);
+
+      setError(
+        err?.message || "Não foi possível realizar o login."
+      );
     } finally {
       setLoading(false);
     }
@@ -66,10 +77,12 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
+
+      console.log("Resultado do cadastro:", data);
 
       if (error) {
         throw error;
@@ -79,7 +92,11 @@ export default function LoginPage() {
         "Cadastro realizado! Verifique seu e-mail para confirmar a conta."
       );
     } catch (err: any) {
-      setError(err?.message || "Não foi possível criar a conta.");
+      console.error("Erro no cadastro:", err);
+
+      setError(
+        err?.message || "Não foi possível criar a conta."
+      );
     } finally {
       setLoading(false);
     }
@@ -110,10 +127,20 @@ export default function LoginPage() {
           boxSizing: "border-box",
         }}
       >
-        <div style={{ textAlign: "center", marginBottom: "30px" }}>
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: "30px",
+          }}
+        >
           <div style={{ fontSize: "50px" }}>✂️</div>
 
-          <h1 style={{ fontSize: "32px", margin: "10px 0" }}>
+          <h1
+            style={{
+              fontSize: "32px",
+              margin: "10px 0",
+            }}
+          >
             AutoClipper AI
           </h1>
 
@@ -218,7 +245,7 @@ export default function LoginPage() {
             cursor: loading ? "not-allowed" : "pointer",
           }}
         >
-          Criar minha conta
+          {loading ? "Aguarde..." : "Criar minha conta"}
         </button>
 
         {error && (
@@ -252,4 +279,3 @@ export default function LoginPage() {
     </main>
   );
 }
-```
