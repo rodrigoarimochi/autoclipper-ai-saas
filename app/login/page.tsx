@@ -2,25 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-  if (!url) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL não configurada.");
-  }
-
-  if (!key) {
-    throw new Error(
-      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY não configurada."
-    );
-  }
-
-  return createClient(url, key);
-}
+import { supabase } from "../lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -45,8 +28,6 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const supabase = getSupabase();
-
       const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
@@ -68,7 +49,7 @@ export default function LoginPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "E-mail ou senha incorretos."
+          : "Não foi possível realizar o login."
       );
     } finally {
       setLoading(false);
@@ -97,30 +78,28 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const supabase = getSupabase();
-
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
       });
 
-      console.log("Resultado do cadastro:", data);
-
       if (error) {
         throw error;
       }
 
-      if (data.user && !data.session) {
-        setSuccess(
-          "Cadastro realizado! Verifique seu e-mail para confirmar a conta."
-        );
-      } else {
+      console.log("Cadastro Supabase:", data);
+
+      if (data.session) {
         setSuccess("Conta criada com sucesso!");
 
         setTimeout(() => {
           router.push("/");
           router.refresh();
         }, 700);
+      } else {
+        setSuccess(
+          "Cadastro realizado! Verifique seu e-mail para confirmar a conta."
+        );
       }
     } catch (err: unknown) {
       console.error("Erro no cadastro:", err);
@@ -141,7 +120,7 @@ export default function LoginPage() {
         minHeight: "100vh",
         background:
           "linear-gradient(135deg, #09090b 0%, #18181b 50%, #27272a 100%)",
-        color: "white",
+        color: "#ffffff",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -158,7 +137,7 @@ export default function LoginPage() {
           borderRadius: "20px",
           padding: "35px",
           boxSizing: "border-box",
-          boxShadow: "0 20px 50px rgba(0,0,0,0.35)",
+          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.35)",
         }}
       >
         <div
@@ -224,7 +203,7 @@ export default function LoginPage() {
               borderRadius: "10px",
               border: "1px solid #52525b",
               background: "#09090b",
-              color: "white",
+              color: "#ffffff",
               fontSize: "16px",
             }}
           />
@@ -257,7 +236,7 @@ export default function LoginPage() {
               borderRadius: "10px",
               border: "1px solid #52525b",
               background: "#09090b",
-              color: "white",
+              color: "#ffffff",
               fontSize: "16px",
             }}
           />
@@ -271,7 +250,7 @@ export default function LoginPage() {
               border: "none",
               borderRadius: "10px",
               background: loading ? "#52525b" : "#f97316",
-              color: "white",
+              color: "#ffffff",
               fontSize: "17px",
               fontWeight: "bold",
               cursor: loading ? "not-allowed" : "pointer",
@@ -292,7 +271,7 @@ export default function LoginPage() {
             border: "1px solid #52525b",
             borderRadius: "10px",
             background: "transparent",
-            color: "white",
+            color: "#ffffff",
             fontSize: "16px",
             fontWeight: "bold",
             cursor: loading ? "not-allowed" : "pointer",
